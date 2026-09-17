@@ -1,22 +1,24 @@
-﻿using System.Text.Json.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Claims
+namespace Claims.Models
 {
+    /// <summary>
+    /// Represents an insurance claim raised against a <see cref="Cover"/>.
+    /// </summary>
     public class Claim
     {
         [BsonId]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         [BsonElement("coverId")]
-        public string CoverId { get; set; }
+        public string CoverId { get; set; } = string.Empty;
 
         [BsonElement("created")]
         [BsonDateTimeOptions(DateOnly = true)]
         public DateTime Created { get; set; }
 
         [BsonElement("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [BsonElement("claimType")]
         public ClaimType Type { get; set; }
