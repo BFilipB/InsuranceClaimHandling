@@ -1,5 +1,9 @@
 using Claims.Auditing;
-using Claims.Controllers;
+using Claims.Data;
+using Claims.Middleware;
+using Claims.Repositories;
+using Claims.Services;
+using Claims.Validation;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using System.Runtime.InteropServices;
@@ -42,6 +46,27 @@ builder.Services.AddDbContext<ClaimsContext>(options =>
     options.UseMongoDB(database.Client, database.DatabaseNamespace.DatabaseName);
 });
 
+// --- Task 1: layering ------------------------------------------------------
+// Repositories: data access only
+builder.Services.AddScoped<IClaimsRepository, ClaimsRepository>();
+builder.Services.AddScoped<ICoversRepository, CoversRepository>();
+
+// Services: business logic (validation, id generation, auditing, premium calc)
+builder.Services.AddScoped<IClaimsService, ClaimsService>();
+builder.Services.AddScoped<ICoversService, CoversService>();
+builder.Services.AddScoped<IPremiumCalculator, PremiumCalculator>();
+
+// --- Task 2: validation ------------------------------------------------------
+builder.Services.AddScoped<IClaimValidator, ClaimValidator>();
+builder.Services.AddScoped<ICoverValidator, CoverValidator>();
+
+// --- Task 3: async auditing ------------------------------------------------------
+// AuditQueue is a singleton so the scoped AuditService (producer, runs per-request) and the
+// singleton AuditBackgroundWorker (consumer, runs for the app's lifetime) share the same channel.
+builder.Services.AddSingleton<AuditQueue>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddHostedService<AuditBackgroundWorker>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -54,6 +79,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Must run before MapControllers() so it can catch ValidationException thrown by a service
+// during controller execution and turn it into a 400 response.
+app.UseMiddleware<ValidationExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
