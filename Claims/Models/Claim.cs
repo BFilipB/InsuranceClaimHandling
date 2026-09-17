@@ -14,7 +14,6 @@ namespace Claims.Models
         public string CoverId { get; set; } = string.Empty;
 
         [BsonElement("created")]
-        [BsonDateTimeOptions(DateOnly = true)]
         public DateTime Created { get; set; }
 
         [BsonElement("name")]

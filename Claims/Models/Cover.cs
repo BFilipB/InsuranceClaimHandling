@@ -11,11 +11,9 @@ namespace Claims.Models
         public string Id { get; set; } = string.Empty;
 
         [BsonElement("startDate")]
-        [BsonDateTimeOptions(DateOnly = true)]
         public DateTime StartDate { get; set; }
 
         [BsonElement("endDate")]
-        [BsonDateTimeOptions(DateOnly = true)]
         public DateTime EndDate { get; set; }
 
         [BsonElement("claimType")]
