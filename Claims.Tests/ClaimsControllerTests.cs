@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net.Http.Json;
+using Claims.Models;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace Claims.Tests
@@ -18,8 +20,12 @@ namespace Claims.Tests
 
             response.EnsureSuccessStatusCode();
 
-            //TODO: Apart from ensuring 200 OK being returned, what else can be asserted?
-        }
+            var claims = await response.Content.ReadFromJsonAsync<IEnumerable<Claim>>();
 
+            // A brand-new instance has an empty Mongo collection, so the important assertion
+            // is that the body actually deserializes into a (possibly empty) list of Claims,
+            // not that it's non-empty.
+            Assert.NotNull(claims);
+        }
     }
 }
