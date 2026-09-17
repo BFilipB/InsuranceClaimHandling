@@ -39,11 +39,14 @@ builder.Services
 builder.Services.AddDbContext<AuditContext>(options =>
     options.UseSqlServer(sqlContainer.GetConnectionString()));
 
-builder.Services.AddDbContext<ClaimsContext>(options =>
+builder.Services.AddSingleton<IMongoClient>(_ =>
+    new MongoClient(mongoContainer.GetConnectionString()));
+
+builder.Services.AddDbContext<ClaimsContext>((serviceProvider, options) =>
 {
-    var client = new MongoClient(mongoContainer.GetConnectionString());
-    var database = client.GetDatabase(builder.Configuration["MongoDb:DatabaseName"]); // Use a default/test database name
-    options.UseMongoDB(database.Client, database.DatabaseNamespace.DatabaseName);
+    var client = serviceProvider.GetRequiredService<IMongoClient>();
+    var databaseName = builder.Configuration["MongoDb:DatabaseName"]!;
+    options.UseMongoDB(client, databaseName);
 });
 
 // --- Task 1: layering ------------------------------------------------------
